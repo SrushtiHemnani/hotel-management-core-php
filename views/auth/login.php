@@ -1,4 +1,6 @@
-<?php include(__DIR__ . '/../../partial/header.php'); ?>
+<?php use App\Helpers\ErrorHandler;
+
+include('partial/header.php'); ?>
 
 <div class="container-fluid">
   <div class="row">
@@ -10,6 +12,11 @@
           <div class="login-main">
             <form class="theme-form" method="POST">
               <h4>Sign in to account</h4>
+                <?php if ($message = ErrorHandler::getFlashMessage('error')): ?>
+                    <div class="error">
+                        <?php echo htmlspecialchars($message); ?>
+                    </div>
+                <?php endif; ?>
               <p>Enter your email & password to login</p>
               <div class="form-group">
                 <label class="col-form-label">Email Address</label>

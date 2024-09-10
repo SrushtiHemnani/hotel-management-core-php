@@ -1,29 +1,38 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-
-use Illuminate\Database\Capsule\Manager as Capsule;
-use Illuminate\Container\Container;
-
-// Initialize Capsule
-$capsule = new Capsule;
+use App\Helpers\ErrorHandler;
+use App\Models\BaseModel;
 
 define("BASE_PATH", "http://localhost:8000/");
 
-// Add database connection
-$capsule->addConnection([
-    'driver'    => 'mysql',
-    'host'      => 'localhost',
-    'database'  => 'hotel_db',
-    'username'  => 'root',
-    'password'  => '',
-    'charset'   => 'utf8',
-    'collation' => 'utf8_unicode_ci',
-    'prefix'    => '',
-]);
+// Database connection parameters
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$database = 'hotel_db_1';
+global $connection;
+// Create a connection
+$connection = new mysqli($host, $username, $password, $database);
 
-// Set Capsule instance globally
-$capsule->setAsGlobal();
+// Check the connection
+if ($connection->connect_error) {
+    die("Connection failed: " . $connection->connect_error);
+}
 
-// Boot Eloquent ORM
-$capsule->bootEloquent();
+// Set the character set
+if (!$connection->set_charset("utf8")) {
+    die("Error loading character set utf8: " . $connection->error);
+}
+// Set the connection in BaseModel so all models can use it
+//
+//// Connection successful
+//echo "Connected successfully";
+//
+//// Your application logic here
+//
+//// Close the connection when done
+//$connection->close();
+
+// Register the global exception handler
+set_exception_handler([ErrorHandler::class, 'handleException']);
+

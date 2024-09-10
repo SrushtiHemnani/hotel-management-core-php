@@ -1,56 +1,76 @@
 <?php
 
-namespace App\services;
+namespace App\Services;
 
-use App\models\User;
+use App\Exceptions\ValidationException;
+use App\Models\Person;
+use Exception;
 
 trait AuthService
 {
-	/**
-	 * @throws \Exception
-	 */
-	public function loginUser(array $data)
-	{
-		// Get user by email
-		$user = User::where('email', $data['email'])->first();
-		
-		if (!$user) {
-			throw new \Exception('User not found.');
-		}
-		
-		if (!password_verify($data['password'], $user->password)) {
-			throw new \Exception('Invalid email or password.');
-		}
-	
-		// Store user in session
-		$_SESSION['user_id'] = $user->id;
-		$_SESSION['name'] = $user->name;
-		$_SESSION['user_data'] = $user;
-		return true;
-	}
-	
-	
-	/**
-	 * @throws \Exception
-	 */
-	public function registerUser(array $data)
-	{
-		// Validate data (e.g., check if email is already taken)
-		$existingUser = User::where('email', $data['email'])->first();
-		if ($existingUser) {
-			throw new \Exception('Email is already registered.');
-		}
-		
-		$user = User::create([
-			                     'name'     => $data['name'],
-			                     'email'    => $data['email'],
-			                     'password' => password_hash($data['password'], PASSWORD_DEFAULT),
-		                     ]);
-		if ($user) {
-			// return true if created
-			return true;
-		}
-		return false;
-	}
-	
+    /**
+     * Login user with provided credentials.
+     *
+     * @param array $data
+     * @return bool
+     * @throws ValidationException
+     * @throws Exception
+     */
+    public function loginUser(array $data): bool
+    {
+        // Find the person by email using the generic method
+        $person = Person::findByField('email', $data['email']);
+        if (!$person) {
+            throw new ValidationException('User not found.');
+        }
+
+        // Verify the password
+        if (!password_verify($data['password'], $person->password)) {
+            throw new ValidationException('Invalid email or password.');
+        }
+
+        // Store user in session
+        $_SESSION['person_id'] = $person->id;
+        $_SESSION['name'] = $person->name;
+        $_SESSION['person_data'] = $person;
+
+        return true;
+    }
+
+    /**
+     * Register a new user with provided data.
+     *
+     * @param array $data
+     * @return bool
+     * @throws ValidationException
+     * @throws Exception
+     */
+    public function registerUser(array $data): bool
+    {
+        // Check if the email is already taken using the generic method
+        $person = Person::findByField('email', $data['email']);
+        if ($person) {
+            throw new ValidationException('Email already taken.');
+        }
+
+        // Prepare data for insertion
+        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+
+        // Create a new Person instance and save it
+        $newPerson = new Person();
+        $newPerson->name = $data['name'];
+        $newPerson->email = $data['email'];
+        $newPerson->password = $data['password'];
+        $newPerson->phone = $data['phone'] ?? null;
+        $newPerson->date_of_birth = $data['date_of_birth'] ?? null;
+        $newPerson->address = $data['address'] ?? null;
+
+        try {
+            $newPerson->save();  // Use the save method from Person model
+        } catch (Exception $e) {
+            throw new Exception('Error creating user.');
+        }
+
+        return true;
+    }
 }

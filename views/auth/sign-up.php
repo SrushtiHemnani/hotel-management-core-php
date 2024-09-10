@@ -1,4 +1,6 @@
-<?php include('partial/header.php');?>
+<?php use App\Helpers\ErrorHandler;
+
+include('partial/header.php');?>
 
 <div class="container-fluid p-0">
     <div class="row m-0">
@@ -11,6 +13,11 @@
                     <div class="login-main">
                         <form class="theme-form" method="POST" >
                             <h4>Create your account</h4>
+                            <?php if ($message = ErrorHandler::getFlashMessage('error')): ?>
+                                <div class="error">
+                                    <?php echo htmlspecialchars($message); ?>
+                                </div>
+                            <?php endif; ?>
                             <p>Enter your personal details to create account</p>
                             <div class="form-group">
                                 <label class="col-form-label pt-0">Your Name</label>

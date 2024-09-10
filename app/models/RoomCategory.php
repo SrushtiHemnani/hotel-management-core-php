@@ -5,21 +5,18 @@ namespace App\models;
 use Exception;
 
 /**
- * Room model class.
+ * RoomCategory model class.
  */
-class Room extends BaseModel
+class RoomCategory extends BaseModel
 {
     // Declare properties with their types
     public int $id;
-    public int $hotel_id;
-    public int $floor_id;
-    public int $room_category_id;
-    public string $room_number;
-    public bool $is_available;
+    public string $name;
+    public int $capacity;
+    public ?string $description = null;
     public ?string $created_at = null;
     public ?string $updated_at = null;
     public ?string $deleted_at = null;
-    // Additional properties for joined data
 
     public function __construct()
     {
@@ -28,32 +25,30 @@ class Room extends BaseModel
 
     protected static function getTable(): string
     {
-        return 'rooms';
+        return 'room_categories';
     }
 
     /**
-     * Save (Insert) room data if no ID exists
+     * Save (Insert) room category data if no ID exists
      *
      * @return bool
      */
     public function save(): bool
     {
-        $query = "INSERT INTO rooms (hotel_id, floor_id, room_category_id, room_number, is_available, created_at, updated_at, deleted_at)
-                  VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NULL)";
+        $query = "INSERT INTO room_categories (name, capacity, description, created_at, updated_at, deleted_at)
+                  VALUES (?, ?, ?, NOW(), NOW(), NULL)";
         $stmt = self::$connection->prepare($query);
         $stmt->bind_param(
-            "iiiss",
-            $this->hotel_id,
-            $this->floor_id,
-            $this->room_category_id,
-            $this->room_number,
-            $this->is_available
+            "sis",
+            $this->name,
+            $this->capacity,
+            $this->description
         );
         return $stmt->execute();
     }
 
     /**
-     * Update room data if ID exists
+     * Update room category data if ID exists
      *
      * @return bool
      * @throws Exception
@@ -64,22 +59,20 @@ class Room extends BaseModel
             throw new Exception("ID is required to update a record.");
         }
 
-        $query = "UPDATE rooms SET hotel_id = ?, floor_id = ?, room_category_id = ?, room_number = ?, is_available = ?, updated_at = NOW() WHERE id = ?";
+        $query = "UPDATE room_categories SET name = ?, capacity = ?, description = ?, updated_at = NOW() WHERE id = ?";
         $stmt = self::$connection->prepare($query);
         $stmt->bind_param(
-            "iiissi",
-            $this->hotel_id,
-            $this->floor_id,
-            $this->room_category_id,
-            $this->room_number,
-            $this->is_available,
+            "sisi",
+            $this->name,
+            $this->capacity,
+            $this->description,
             $this->id
         );
         return $stmt->execute();
     }
 
     /**
-     * Delete room record
+     * Delete room category record
      *
      * @return bool
      * @throws Exception
@@ -90,14 +83,14 @@ class Room extends BaseModel
             throw new Exception("ID is required to delete a record.");
         }
 
-        $query = "DELETE FROM rooms WHERE id = ?";
+        $query = "DELETE FROM room_categories WHERE id = ?";
         $stmt = self::$connection->prepare($query);
         $stmt->bind_param("i", $this->id);
         return $stmt->execute();
     }
 
     /**
-     * Soft delete room record
+     * Soft delete room category record
      *
      * @return bool
      * @throws Exception
@@ -108,7 +101,7 @@ class Room extends BaseModel
             throw new Exception("ID is required to delete a record.");
         }
 
-        $query = "UPDATE rooms SET deleted_at = NOW() WHERE id = ?";
+        $query = "UPDATE room_categories SET deleted_at = NOW() WHERE id = ?";
         $stmt = self::$connection->prepare($query);
         $stmt->bind_param("i", $this->id);
         return $stmt->execute();
